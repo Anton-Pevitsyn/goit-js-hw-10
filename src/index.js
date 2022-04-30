@@ -14,7 +14,20 @@ refs.countryNameInput.addEventListener("input", _.debounce(onSearch, 300));
 
 function onSearch(event) {
   const name = event.target.value;
-  API.fetchCountries(name).then(renderCounriList).catch(onError);
+  API.fetchCountries(name)
+    .then(message)
+    .then(renderCounriList)
+    .then(renderCounriInfo)
+    .catch(onError);
+}
+
+function message(countries) {
+  if (countries.length >= 6) {
+    refs.countryList.innerHTML = "";
+    refs.countryInfo.innerHTML = "";
+    return Notify.info("Недостаточно данных");
+  }
+  return countries;
 }
 
 function renderCounriList(countries) {
@@ -22,18 +35,40 @@ function renderCounriList(countries) {
   if (countries.length > 1 && countries.length < 6) {
     refs.countryList.innerHTML = "";
     refs.countryInfo.innerHTML = "";
-    const markup = countries
-      .map((element) => {
-        return `<li class="item"><img src="${element.flags.png}" alt="flag"  width="30">${element.name.official}</li>`;
-      })
-      .join("");
+    const markup = countries.map(markupContryList).join("");
     refs.countryList.insertAdjacentHTML("afterbegin", markup);
-  } else if (countries.length === 1) {
+    return;
+  }
+  return countries;
+}
+
+function renderCounriInfo(country) {
+  if (country.length === 1) {
     refs.countryList.innerHTML = "";
     refs.countryInfo.innerHTML = "";
-    const markupDiv = `<h3 class="title-card"><img src="${
-      countries[0].flags.png
-    }" alt="flag" width="40" />${countries[0].name.official}</h3>
+    refs.countryInfo.insertAdjacentHTML(
+      "afterbegin",
+      markupCountryInfo(country)
+    );
+    return;
+  }
+  return country;
+}
+
+function onError() {
+  Notify.warning("Нет такой страны");
+  refs.countryList.innerHTML = "";
+  refs.countryInfo.innerHTML = "";
+}
+
+function markupContryList(element) {
+  return `<li class="item"><img src="${element.flags.png}" alt="flag"  width="30">${element.name.official}</li>`;
+}
+
+function markupCountryInfo(countries) {
+  return `<h3 class="title-card"><img src="${
+    countries[0].flags.png
+  }" alt="flag" width="40" />${countries[0].name.official}</h3>
 <ul>
   <li class="item-countri"><span class="argument">Capital: </span>${countries[0].capital.join(
     ", "
@@ -45,15 +80,4 @@ function renderCounriList(countries) {
     countries[0].languages
   ).join(", ")}</li>
 </ul>`;
-    refs.countryInfo.insertAdjacentHTML("afterbegin", markupDiv);
-  } else if (countries.length >= 6) {
-    refs.countryList.innerHTML = "";
-    refs.countryInfo.innerHTML = "";
-    Notify.info("Недостаточно данных");
-  }
-}
-
-function onError() {
-  alert("dsfsdfsf");
-  Notify.warning("Нет такой страны");
 }
