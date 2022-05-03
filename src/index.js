@@ -16,7 +16,7 @@ function onSearch(event) {
   const name = event.target.value;
   API.fetchCountries(name)
     .then(message)
-    .then(renderCounriList)
+    .then(onMarkup)
     .then(renderCounriInfo)
     .catch(onError);
 }
@@ -25,34 +25,19 @@ function message(countries) {
   if (countries.length >= 6) {
     refs.countryList.innerHTML = "";
     refs.countryInfo.innerHTML = "";
-    return Notify.info("Недостаточно данных");
+    Notify.info("Недостаточно данных");
   }
   return countries;
 }
 
-function renderCounriList(countries) {
-  // console.log(countries);
-  if (countries.length > 1 && countries.length < 6) {
-    refs.countryList.innerHTML = "";
-    refs.countryInfo.innerHTML = "";
-    const markup = countries.map(markupContryList).join("");
-    refs.countryList.insertAdjacentHTML("afterbegin", markup);
-    return;
-  }
-  return countries;
+function onMarkup(countries) {
+  return countries.map(markupContryList).join("");
 }
 
-function renderCounriInfo(country) {
-  if (country.length === 1) {
-    refs.countryList.innerHTML = "";
-    refs.countryInfo.innerHTML = "";
-    refs.countryInfo.insertAdjacentHTML(
-      "afterbegin",
-      markupCountryInfo(country)
-    );
-    return;
-  }
-  return country;
+function renderCounriInfo(markup) {
+  refs.countryList.innerHTML = "";
+  refs.countryInfo.innerHTML = "";
+  refs.countryList.innerHTML = markup;
 }
 
 function onError() {
@@ -61,23 +46,24 @@ function onError() {
   refs.countryInfo.innerHTML = "";
 }
 
-function markupContryList(element) {
-  return `<li class="item"><img src="${element.flags.png}" alt="flag"  width="30">${element.name.official}</li>`;
-}
-
-function markupCountryInfo(countries) {
-  return `<h3 class="title-card"><img src="${
-    countries[0].flags.png
-  }" alt="flag" width="40" />${countries[0].name.official}</h3>
+function markupContryList(element, index, array) {
+  console.log(array);
+  if (array.length > 1 && array.length <= 6) {
+    return `<li class="item"><img src="${element.flags.png}" alt="flag"  width="30">${element.name.official}</li>`;
+  } else if (array.length === 1) {
+    return `<h3 class="title-card"><img src="${
+      element.flags.png
+    }" alt="flag" width="40" />${element.name.official}</h3>
 <ul>
-  <li class="item-countri"><span class="argument">Capital: </span>${countries[0].capital.join(
+  <li class="item-countri"><span class="argument">Capital: </span>${element.capital.join(
     ", "
   )}</li>
   <li class="item-countri"><span class="argument">Population: </span>${
-    countries[0].population
+    element.population
   }</li>
   <li class="item-countri"><span class="argument">Languges: </span>${Object.values(
-    countries[0].languages
+    element.languages
   ).join(", ")}</li>
 </ul>`;
+  }
 }
