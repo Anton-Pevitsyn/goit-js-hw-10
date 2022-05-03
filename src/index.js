@@ -14,11 +14,7 @@ refs.countryNameInput.addEventListener("input", _.debounce(onSearch, 300));
 
 function onSearch(event) {
   const name = event.target.value;
-  API.fetchCountries(name)
-    .then(message)
-    .then(onMarkup)
-    .then(renderCounriInfo)
-    .catch(onError);
+  API.fetchCountries(name).then(message).then(onMarkup).catch(onError);
 }
 
 function message(countries) {
@@ -31,13 +27,14 @@ function message(countries) {
 }
 
 function onMarkup(countries) {
-  return countries.map(markupContryList).join("");
-}
-
-function renderCounriInfo(markup) {
-  refs.countryList.innerHTML = "";
-  refs.countryInfo.innerHTML = "";
-  refs.countryList.innerHTML = markup;
+  const markup = countries.map(markupContryList).join("");
+  if (countries.length > 1 && countries.length <= 6) {
+    refs.countryInfo.innerHTML = "";
+    refs.countryList.innerHTML = markup;
+  } else if (countries.length === 1) {
+    refs.countryInfo.innerHTML = markup;
+    refs.countryList.innerHTML = "";
+  }
 }
 
 function onError() {
@@ -47,7 +44,6 @@ function onError() {
 }
 
 function markupContryList(element, index, array) {
-  console.log(array);
   if (array.length > 1 && array.length <= 6) {
     return `<li class="item"><img src="${element.flags.png}" alt="flag"  width="30">${element.name.official}</li>`;
   } else if (array.length === 1) {
